@@ -1,5 +1,5 @@
 module alu #(
-  BW = 16 // bitwidth
+  BW = 4 // bitwidth
   ) (
   input  logic unsigned [BW-1:0] in_a,
   input  logic unsigned [BW-1:0] in_b,
@@ -24,20 +24,24 @@ module alu #(
 	endcase
   end
 
-   //describe the flags 
+   //this block describes the behaviour of the flags 
    always_comb begin
-	flags = 3'b000;s
-	if(opcode == 3'd0 || opcode ==3'd1) begin  //check the flag situations for subtraction
-	   if((in_a[BW-1] & in_b[BW-1] & ~out[BW-1]) | //case for when pos + pos = neg
-	      (~in_a[BW-1] & ~in_b[BW-1] & out[BW-1])) //case for when neg + neg = pos
-	       flags[2] =  1'b1;
+	flags = 3'b000; 
+	if(opcode == 3'd0 && ((in_a[BW-1] & in_b[BW-1] & ~out[BW-1]) | 
+			     (~in_a[BW-1] & ~in_b[BW-1] & out[BW-1])) begin 
+		flags[2] =  1'b1; //addition overflow
+	end	
+	else if(opcode == 3'd1 && ((in_a[BW-1] & ~in_b[BW-1] & ~out[BW-1]) | 
+				  (~in_a[BW-1] & in_b[BW-1] & out[BW-1])) begin
+		flags[2] =  1'b1; //subtraction overflow
 	end
 	else flags[2] = 1'b0;
 	
-	flags[1] = out[BW-1]; //negative flag
+        flags[1] = out[BW-1]; //negative flag
 	flags[0] = ~|out; //zero flag
-
    end
+	
+
 
 endmodule
 
