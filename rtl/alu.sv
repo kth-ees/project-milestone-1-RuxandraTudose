@@ -8,7 +8,7 @@ module alu #(
   output logic             [2:0] flags // {overflow, negative, zero}
   );
 
-  //describe the ALU operations
+  //describe the ALU operations acording to the table
   always_comb begin
 	out = '0; //output rule
 	case(opcode) 
@@ -24,23 +24,31 @@ module alu #(
 	endcase
   end
 
-   //describe the flags 
+   //describe the behaviour of the flags
    always_comb begin
-	flags = 3'b000;s
-	if(opcode == 3'd0 || opcode ==3'd1) begin  //check the flag situations for subtraction
-	   if((in_a[BW-1] & in_b[BW-1] & ~out[BW-1]) | //case for when pos + pos = neg
-	      (~in_a[BW-1] & ~in_b[BW-1] & out[BW-1])) //case for when neg + neg = pos
-	       flags[2] =  1'b1;
+	flags = 3'b000; //output rule 
+	
+	//condition for addition overflow
+	//the sum of two numbers with the same sign should not result in a number of opposite sign
+	if(opcode == 3'b000 && ((in_a[BW-1] & in_b[BW-1] & ~out[BW-1]) |
+				(~in_a[BW-1] & ~in_b[BW-1] & out[BW-1]))) begin
+		flags[2] = 1'b1;
 	end
-	else flags[2] = 1'b0;
+	
+	//condition for subtraction overflow
+	//if A and out have different signs and A and B have different signs before subtraction => overflow
+	//e.g : 3 - (-5) = 8 (1000 - which is interpreted as -8)
+	else if(opcode == 3'b001 && ((in_a[BW-1] & ~in_b[BW-1] & ~out[BW-1]) |
+				(~in_a[BW-1] & in_b[BW-1] & out[BW-1]))) begin
+		 
+		flags[2] = 1'b1;
+	end else 
+		flags[2] = 1'b0;
 	
 	flags[1] = out[BW-1]; //negative flag
-	flags[0] = ~|out; //zero flag
+	flags[0] = ~|out; //zero flag - apply nor on the bits of 'out' 
 
    end
 
 endmodule
-
-
-
 
