@@ -16,7 +16,7 @@ module alu #(
 		3'd1: out = in_a - in_b;
 		3'd2: out = in_a && in_b;
 		3'd3: out = in_a || in_b;
-		3'd4: out = in_a ^ in_b;
+		3'd4: out = (in_a && !in_b) || (!in_a && in_b);
 		3'd5: out = in_a + 1;
 		3'd6: out = in_a;
 		3'd7: out = in_b;
